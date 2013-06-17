@@ -1,11 +1,13 @@
 package com.wimbli.WorldBorder;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.Map;
@@ -41,6 +43,7 @@ public class Config
 	private static boolean portalRedirection = true;
 	private static boolean dynmapEnable = true;
 	private static String dynmapMessage;
+	private static List<String> teleportToOtherWorlds = new ArrayList<String>();
 
 	// for monitoring plugin efficiency
 //	public static long timeUsed = 0;
@@ -422,6 +425,7 @@ public class Config
 		timerTicks = cfg.getInt("timer-delay-ticks", 5);
 		dynmapEnable = cfg.getBoolean("dynmap-border-enabled", true);
 		dynmapMessage = cfg.getString("dynmap-border-message", "The border of the world.");
+		teleportToOtherWorlds = cfg.getStringList("teleport-to-other-worlds");
 		LogConfig("Using " + (ShapeName()) + " border, knockback of " + knockBack + " blocks, and timer delay of " + timerTicks + ".");
 
 		StartBorderTimer();
@@ -460,6 +464,24 @@ public class Config
 				Boolean overrideShape = (Boolean) bord.get("shape-round");
 				boolean wrap = (boolean) bord.getBoolean("wrapping", false);
 				BorderData border = new BorderData(bord.getDouble("x", 0), bord.getDouble("z", 0), bord.getInt("radiusX", 0), bord.getInt("radiusZ", 0), overrideShape, wrap);
+				
+				//Teleport borders
+				if(bord.getString("teleport-world-north") != ""){
+					border.setTeleportWorld(BorderData.NORTH, bord.getString("teleport-world-west"));
+				}
+				
+				if(bord.getString("teleport-world-east") != ""){
+					border.setTeleportWorld(BorderData.EAST, bord.getString("teleport-world-west"));
+				}
+				
+				if(bord.getString("teleport-world-south") != ""){
+					border.setTeleportWorld(BorderData.SOUTH, bord.getString("teleport-world-west"));
+				}
+				
+				if(bord.getString("teleport-world-west") != ""){
+					border.setTeleportWorld(BorderData.WEST, bord.getString("teleport-world-west"));
+				}
+				
 				borders.put(worldName, border);
 				LogConfig(BorderDescription(worldName));
 			}

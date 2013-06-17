@@ -3,6 +3,7 @@ package com.wimbli.WorldBorder;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -10,6 +11,13 @@ import org.bukkit.World;
 
 public class BorderData
 {
+
+	public static final int NORTH = 0;
+	public static final int EAST = 1;
+	public static final int SOUTH = 2;
+	public static final int WEST = 3;
+	public static final int NODIRECTION = -1;
+	
 	// the main data interacted with
 	private double x = 0;
 	private double z = 0;
@@ -17,6 +25,7 @@ public class BorderData
 	private int radiusZ = 0;
 	private Boolean shapeRound = null;
 	private boolean wrapping = false;
+	private String[] worldTeleport = new String[3];
 
 	// some extra data kept handy for faster border checks
 	private double maxX;
@@ -93,6 +102,23 @@ public class BorderData
 		this.maxZ = z + radiusZ;
 		this.minZ = z - radiusZ;
 	}
+	
+	public double getMinX(){
+		return this.minX;
+	}
+	
+	public double getMaxX(){
+		return this.maxX;
+	}
+	
+	public double getMinZ(){
+		return this.minZ;
+	}
+	
+	public double getMaxZ(){
+		return this.maxZ;
+	}
+	
 	public int getRadiusX()
 	{
 		return radiusX;
@@ -163,6 +189,15 @@ public class BorderData
 		return "radius " + ((radiusX == radiusZ) ? radiusX : radiusX + "x" + radiusZ) + " at X: " + Config.coord.format(x) + " Z: " + Config.coord.format(z) + (shapeRound != null ? (" (shape override: " + Config.ShapeName(shapeRound.booleanValue()) + ")") : "") + (wrapping ? (" (wrapping)") : "");
 	}
 
+	public int getSide(Location location){
+		if(location.getX() < minX) return BorderData.WEST;
+		if(location.getX() > maxX) return BorderData.EAST;
+		if(location.getZ() < minZ) return BorderData.NORTH;
+		if(location.getZ() > maxZ) return BorderData.SOUTH;
+	
+		return BorderData.NODIRECTION;
+	}
+	
 	// This algorithm of course needs to be fast, since it will be run very frequently
 	public boolean insideBorder(double xLoc, double zLoc, boolean round)
 	{
@@ -342,8 +377,25 @@ public class BorderData
 
 		return -1.0;	// no safe Y location?!?!? Must be a rare spot in a Nether world or something
 	}
+	
+	public void setTeleportWorld(int direction, String string) {
+		this.worldTeleport[direction] = string;
+	}
 
-
+	public String getTeleportWorld(int direction) {
+		return this.worldTeleport[direction];
+	}
+	
+	public Location getRelativePosition(Location location, BorderData teleportWorldBorder, World newWorld) {
+		double differenceX = teleportWorldBorder.getRadiusX() / this.getRadiusX();
+		double differenceZ = teleportWorldBorder.getRadiusZ() / this.getRadiusZ();
+		
+		double newX = (location.getX() - this.minX) * differenceX + teleportWorldBorder.minX;
+		double newZ = (location.getZ() - this.minZ) * differenceZ + teleportWorldBorder.minZ;
+		
+		return new Location(newWorld, newX, location.getY(), newZ);
+	}
+	
 	@Override
 	public boolean equals(Object obj)
 	{

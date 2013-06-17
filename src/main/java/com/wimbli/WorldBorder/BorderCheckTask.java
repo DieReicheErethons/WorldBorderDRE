@@ -109,7 +109,26 @@ public class BorderCheckTask implements Runnable
 			Config.LogWarn((notify ? "Border crossing" : "Check was run") + " in \"" + loc.getWorld().getName() + "\". Border " + border.toString());
 			Config.LogWarn("Player position X: " + Config.coord.format(loc.getX()) + " Y: " + Config.coord.format(loc.getY()) + " Z: " + Config.coord.format(loc.getZ()));
 		}
-
+		
+		//If teleport to another world is enabled
+		if(!border.getShape()){
+			int direction = border.getSide(player.getLocation());
+			if(direction != BorderData.NODIRECTION){
+				String teleportWorldName = border.getTeleportWorld(direction);
+				if(teleportWorldName != "" && Bukkit.getWorld(teleportWorldName) != null){
+					World teleportWorld = Bukkit.getWorld(teleportWorldName);
+					
+					BorderData teleportWorldBorder = Config.Border(teleportWorld.getName());
+					
+					Location newLocation = border.getRelativePosition(player.getLocation(), teleportWorldBorder, teleportWorld);
+					
+					if(newLocation != null){
+						return newLocation;
+					}
+				}
+			}
+		}
+		
 		Location newLoc = border.correctedPosition(loc, Config.ShapeRound(), player.isFlying());
 
 		// it's remotely possible (such as in the Nether) a suitable location isn't available, in which case...
