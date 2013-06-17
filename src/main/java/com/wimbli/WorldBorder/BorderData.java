@@ -393,7 +393,7 @@ public class BorderData
 		double newX = (location.getX() - this.minX) * differenceX + teleportWorldBorder.minX;
 		double newZ = (location.getZ() - this.minZ) * differenceZ + teleportWorldBorder.minZ;
 		
-		return new Location(newWorld, newX, location.getY(), newZ);
+		return newWorld.getHighestBlockAt(new Location(newWorld, newX, location.getY(), newZ)).getLocation();
 	}
 	
 	@Override
